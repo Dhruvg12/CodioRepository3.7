@@ -1,7 +1,7 @@
-<% if flash[:message] %>
-   <div class="alert alert-danger">
-     <span class="error"><%= flash[:message] %></span>
-   </div>
+<% if flash[:notice] %>
+  <div class="alert alert-danger">
+    <span class="error"><%= flash[:notice] %></span>
+  </div>
 <% end %>
 
 <div class="alert alert-warning">
@@ -19,10 +19,13 @@
 <form action="/guess" method="post">
   <div class="form-group row">
     <label for="guess" class="col-md-2 col-form-label">Guess a letter:</label>
-    <input type="text" name="guess" autocomplete="off"
+    <input type="text" name="guess" id="guess" maxlength="1" autocomplete="off"
            class="form-control col-md-1"/>
     <input type="submit" value="Guess!" class="col-md-2 btn btn-success"/>
   </div>
 </form>
 
-<%= erb :new %>
+<h2>Start New Game</h2>
+<form action="/create" method="post">
+  <button type="submit" class="btn btn-primary">New Game</button>
+</form>
