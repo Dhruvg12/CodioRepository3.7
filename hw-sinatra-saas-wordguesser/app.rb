@@ -42,21 +42,18 @@ post '/guess' do
   @game = session[:game]
   halt 400, "No game" unless @game
 
-  letter = params[:guess].to_s[0] # first character or nil->""
+  letter = params[:guess].to_s[0] || ''   # first char or ''
   begin
-    used = !@game.guess(letter)   # guess returns false if already guessed
+    used = !@game.guess(letter)           # false = already guessed
     if used
       flash[:message] = "You have already used that letter."
-      flash[:notice]  = flash[:message] # keep if your view still checks :notice
     end
   rescue ArgumentError
     flash[:message] = "Invalid guess."
-    flash[:notice]  = flash[:message]
   end
 
   redirect '/show'
 end
-
 # Every time a guess is made, we end up here.
 # Decide if the player won/lost/keep playing.
 get '/show' do
@@ -74,13 +71,20 @@ end
 get '/win' do
   @game = session[:game]
   halt 400, "No game" unless @game
-  erb :win
+  if @game.check_win_or_lose == :win
+    erb :win
+  else
+    redirect '/show'   # prevent “fake” win
+  end
 end
 
 get '/lose' do
   @game = session[:game]
   halt 400, "No game" unless @game
-  erb :lose
+  if @game.check_win_or_lose == :lose
+    erb :lose
+  else
+    redirect '/show'   # prevent “fake” loss
+  end
 end
-
 end
