@@ -35,32 +35,56 @@ class WordGuesserApp < Sinatra::Base
     redirect '/show'
   end
 
-  # Use existing methods in WordGuesserGame to process a guess.
-  # If a guess is repeated, set flash[:message] to "You have already used that letter."
-  # If a guess is invalid, set flash[:message] to "Invalid guess."
-  post '/guess' do
-    params[:guess].to_s[0]
-    ### YOUR CODE HERE ###
-    redirect '/show'
+# Use existing methods in WordGuesserGame to process a guess.
+# If a guess is repeated, set flash[:message] = "You have already used that letter."
+# If a guess is invalid,  set flash[:message] = "Invalid guess."
+post '/guess' do
+  @game = session[:game]
+  halt 400, "No game" unless @game
+
+  letter = params[:guess].to_s[0] || ''   # first char or ''
+  begin
+    used = !@game.guess(letter)           # false = already guessed
+    if used
+      flash[:message] = "You have already used that letter."
+    end
+  rescue ArgumentError
+    flash[:message] = "Invalid guess."
   end
 
-  # Everytime a guess is made, we should eventually end up at this route.
-  # Use existing methods in WordGuesserGame to check if player has
-  # won, lost, or neither, and take the appropriate action.
-  # Notice that the show.erb template expects to use the instance variables
-  # wrong_guesses and word_with_guesses from @game.
-  get '/show' do
-    ### YOUR CODE HERE ###
-    erb :show # You may change/remove this line
-  end
+  redirect '/show'
+end
+# Every time a guess is made, we end up here.
+# Decide if the player won/lost/keep playing.
+get '/show' do
+  @game = session[:game]
+  halt 400, "No game" unless @game
 
-  get '/win' do
-    ### YOUR CODE HERE ###
-    erb :win # You may change/remove this line
+  case @game.check_win_or_lose
+  when :win  then redirect '/win'
+  when :lose then redirect '/lose'
+  else
+    erb :show
   end
+end
 
-  get '/lose' do
-    ### YOUR CODE HERE ###
-    erb :lose # You may change/remove this line
+get '/win' do
+  @game = session[:game]
+  halt 400, "No game" unless @game
+  if @game.check_win_or_lose == :win
+    erb :win
+  else
+    redirect '/show'   # prevent “fake” win
   end
+end
+
+get '/lose' do
+  @game = session[:game]
+  halt 400, "No game" unless @game
+  if @game.check_win_or_lose == :lose
+    erb :lose
+  else
+    redirect '/show'   # prevent “fake” loss
+  end
+end
 end
